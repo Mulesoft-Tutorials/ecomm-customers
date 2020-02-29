@@ -1,0 +1,27 @@
+
+{"customers": [
+                  {
+                    "id": "deb89058-77fb-4e97-8c83-6506c38cacf8",
+                    "firstName": "Jason",
+                    "lastName": "Bourne",
+                    "paymentMethods": [
+                      {
+                        "paymentMethodType": {
+                          "medium": "CARD",
+                          "issuer": "BANK",
+                          "name": "VISA"
+                        }
+                      }
+                    ],
+                    "deliveryAddresses": [
+                      {
+                        "type": "BILLING",
+                        "city": "San Francisco",
+                        "state": "California",
+                        "postalCode": "90210",
+                        "country": "US"
+                      }
+                    ]
+                  }
+                ]
+              }

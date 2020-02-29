@@ -1,0 +1,70 @@
+#%RAML 1.0
+title: ecom-customer-api
+baseUri: https://anypoint.mulesoft.com/mocking/api/v1/links/b9e38245-ccb7-4b99-8bf0-39e256ef46ac/api
+description: This is ecomm customer RAML file
+securedBy: basicAuth
+securitySchemes:
+  basicAuth:
+    description: Each request must contain the headers necessary for
+                 basic authentication
+    type: Basic Authentication
+    describedBy:
+      headers:
+        Authorization:
+          description: Used to send the Base64-encoded "username:password"
+                       credentials
+          type: string
+      responses:
+        401:
+          description: |
+            Unauthorized. Either the provided username and password
+            combination is invalid, or the user is not allowed to access
+            the content provided by the requested URL. 
+mediaType:
+  - application/json
+version: "1.0"
+protocols:
+  - HTTP
+/customers:
+  get:
+    description: Retrieve customer details from ecomm
+    headers:
+      Corelation-ID:
+        required: true
+    responses:
+      "200":
+        body:
+          example:
+            !include /examples/customer-res.raml
+  post:
+    description: Used to create new customer
+    headers:
+      Corelation-ID:
+        required: true
+    body:
+      application/json:
+        example:
+              !include /examples/customer-req.raml
+    responses:
+      200:
+        body:
+          application/json:
+            example:
+              {
+                "msg": "Customer Account Created"
+              }
+  /{customer-id}:
+    get:
+      description: Get individual customer based on the identifier
+      headers:
+        Corelation-ID:
+          required: true
+      responses:
+        "200":
+          body:
+            example:
+              !include /examples/customer-res.raml     
+
+            
+            
+      

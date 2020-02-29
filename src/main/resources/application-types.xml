@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="customer_response" format="json">
+      <types:shape format="weave" example="examples/customer_response.json"><![CDATA[%dw 2.0
+
+type customer_response = {|
+  customers: Array<{|    id: String,     firstName: String,     lastName: String,     paymentMethods: Array<{|      paymentMethodType: {|        medium: String,         issuer: String,         name: String      |}    |}>, 
+    deliveryAddresses: Array<{|      "type": String,       city: String,       state: String,       postalCode: String,       country: String    |}>
+  |}>
+|} {"example": "{\\\"customers\\\":[{\\\"id\\\":\\\"deb89058-77fb-4e97-8c83-6506c38cacf8\\\",\\\"firstName\\\":\\\"Jason\\\",\\\"lastName\\\":\\\"Bourne\\\",\\\"paymentMethods\\\":[{\\\"paymentMethodType\\\":{\\\"medium\\\":\\\"CARD\\\",\\\"issuer\\\":\\\"BANK\\\",\\\"name\\\":\\\"VISA\\\"}}],\\\"deliveryAddresses\\\":[{\\\"type\\\":\\\"BILLING\\\",\\\"city\\\":\\\"San Francisco\\\",\\\"state\\\":\\\"California\\\",\\\"postalCode\\\":\\\"90210\\\",\\\"country\\\":\\\"US\\\"}]}]}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="customer_request" format="json">
+      <types:shape format="weave" example="examples/customer_request.json"><![CDATA[%dw 2.0
+
+type customer_request = {|
+  id: String, 
+  firstName: String, 
+  lastName: String, 
+  paymentMethods: {|
+    paymentMethodType: {|
+      medium: String, 
+      issuer: String, 
+      name: String
+    |}
+  |}, 
+  deliveryAddresses: {|
+    "type": String, 
+    city: String, 
+    state: String, 
+    postalCode: String, 
+    country: String
+  |}
+|} {"example": "{\\\"id\\\":\\\"1234\\\",\\\"firstName\\\":\\\"Jason\\\",\\\"lastName\\\":\\\"Bourne\\\",\\\"paymentMethods\\\":{\\\"paymentMethodType\\\":{\\\"medium\\\":\\\"CARD\\\",\\\"issuer\\\":\\\"BANK\\\",\\\"name\\\":\\\"VISA\\\"}},\\\"deliveryAddresses\\\":{\\\"type\\\":\\\"BILLING\\\",\\\"city\\\":\\\"San Francisco\\\",\\\"state\\\":\\\"California\\\",\\\"postalCode\\\":\\\"90210\\\",\\\"country\\\":\\\"US\\\"}}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#73cba540-a39d-4e22-a521-600f84878cf7">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="customer_response"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#61db5d93-fabc-434a-82be-1aa1da43776f">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="customer_request"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#7f4e04cd-ea07-4e4a-b044-00c9d57a81a2">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="customer_response"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

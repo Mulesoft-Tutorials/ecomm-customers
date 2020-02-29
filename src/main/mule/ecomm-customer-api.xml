@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd  http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+    <http:listener-config name="ecomm-customer-api-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="${http.Port}" />
+    </http:listener-config>
+    <apikit:config name="ecomm-customer-api-config" api="ecomm-customer-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <configuration-properties doc:name="Configuration properties" doc:id="7591399b-cc1f-4678-b0e3-bb4590d72139" file="Config\dev-config.properties" />
+    <db:config name="MysqlDB_Config" doc:name="Database Config" doc:id="2e3480f6-a66f-4e6c-b042-7a032e51f608">
+        <db:my-sql-connection host="localhost" port="3306" user="root" password="Toyota@123" database="w3_ecomm" />
+    </db:config>
+    <flow name="ecomm-customer-api-main">
+        <http:listener config-ref="ecomm-customer-api-httpListenerConfig" path="${http.Path}" doc:name="Ecomm-Customer-Http-Listener">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="ecomm-customer-api-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="ecomm-customer-api-console">
+        <http:listener config-ref="ecomm-customer-api-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="ecomm-customer-api-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="get:\customers:ecomm-customer-api-config" doc:id="73cba540-a39d-4e22-a521-600f84878cf7">
+        <db:select doc:name="QueryCustomers" doc:id="780f044c-3b42-45e9-99f2-da0020d644cb" config-ref="MysqlDB_Config">
+            <db:sql>select * from w3_ecomm.customers</db:sql>
+        </db:select>
+		<ee:transform doc:name="Transform Message" doc:id="2d2331c4-4701-43a0-8294-8cc06a4d682c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	customers: payload map ( payload01 , indexOfPayload01 ) -> {
+		id: payload01.id as String,
+		firstName: payload01.firstName default "",
+		lastName: payload01.lastName default "",
+		paymentMethods: [{
+			paymentMethodType: {
+				medium: (payload01.paymentIssuer default "") ++ (payload01.paymentMeduim default ""),
+				issuer: payload01.paymentIssuer default "",
+				name: payload01.paymentType default ""
+			}
+		}],
+		deliveryAddresses: [{
+			"type": payload01.addressType default "",
+			city: payload01.City default "",
+			state: payload01.State default "",
+			postalCode: payload01.PostalCode default "",
+			country: payload01.country default ""
+		}]
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+    </flow>
+    <flow name="post:\customers:application\json:ecomm-customer-api-config" doc:id="61db5d93-fabc-434a-82be-1aa1da43776f">
+        <logger level="INFO" doc:name="Logger" doc:id="cd7c108a-5c26-4fb4-bc39-9e6bd2bf44fe" message="#[payload]"/>
+		<db:insert doc:name="Insert" doc:id="c8f93754-37b2-4684-93ed-b85cbd71cc85" config-ref="MysqlDB_Config">
+            <db:sql>insert into w3_ecomm.customers(id,firstName,lastName,paymentMeduim,paymentIssuer,paymentType,addressType,City,State,PostalCode,country) values(:ID,:FNAME,:LNAME,:MEDIUM,:ISSUER,:PMTTYPE,:ADDRTYPE,:CITY,:STATE,:ZIP,:COUNTRY)</db:sql>
+			<db:input-parameters ><![CDATA[#[%dw 2.0
+output application/java
+---
+{
+	ZIP: payload.deliveryAddresses.postalCode,
+	ISSUER: payload.paymentMethods.paymentMethodType.issuer,
+	ADDRTYPE: payload.deliveryAddresses."type",
+	LNAME: payload.lastName,
+	MEDIUM: payload.paymentMethods.paymentMethodType.medium,
+	CITY: payload.deliveryAddresses.city,
+	COUNTRY: payload.deliveryAddresses.country,
+	STATE: payload.deliveryAddresses.state,
+	ID: payload.id,
+	FNAME: payload.firstName,
+	PMTTYPE: payload.paymentMethods.paymentMethodType.name
+}]]]></db:input-parameters>
+        </db:insert>
+        <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  msg: "Customer Account Created"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="3b23d198-7082-4dcc-b626-0d8f850774e9" message="#[payload]"/>
+    </flow>
+    <flow name="get:\customers\(customer-id):ecomm-customer-api-config" doc:id="7f4e04cd-ea07-4e4a-b044-00c9d57a81a2">
+		<logger level="INFO" doc:name="Logger" doc:id="3a4666e4-611d-4d6f-86ce-06be6cfef072" message="#[attributes.uriParams['customer-id']]"/>
+		<db:select doc:name="QuerySingleCustomers" doc:id="73595f63-1324-490b-9a77-7e98edfe9b84" config-ref="MysqlDB_Config" >
+			<db:sql >select * from w3_ecomm.customers
+where id = :ID</db:sql>
+			<db:input-parameters ><![CDATA[#[{'ID' : attributes.uriParams['customer-id']}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="8324c636-5f2b-411f-90a0-448adceb4f33" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	customers: payload map ( payload01 , indexOfPayload01 ) -> {
+		id: payload01.id as String,
+		firstName: payload01.firstName default "",
+		lastName: payload01.lastName default "",
+		paymentMethods: [{
+			paymentMethodType: {
+				medium: payload01.paymentMeduim default "",
+				issuer: payload01.paymentIssuer default "",
+				name: payload01.paymentType default ""
+			}
+		}],
+		deliveryAddresses: [{
+			"type": payload01.addressType default "",
+			city: payload01.City default "",
+			state: payload01.State default "",
+			postalCode: payload01.PostalCode default "",
+			country: payload01.country default ""
+		}]
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+    </flow>
+</mule>

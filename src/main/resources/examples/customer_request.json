@@ -1,0 +1,21 @@
+              {
+                    "id": "1234",
+                    "firstName": "Jason",
+                    "lastName": "Bourne",
+                    "paymentMethods": 
+                      {
+                        "paymentMethodType": {
+                          "medium": "CARD",
+                          "issuer": "BANK",
+                          "name": "VISA"
+                        }
+                      },
+                    "deliveryAddresses":
+                      {
+                        "type": "BILLING",
+                        "city": "San Francisco",
+                        "state": "California",
+                        "postalCode": "90210",
+                        "country": "US"
+                      }
+                  }
